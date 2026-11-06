@@ -143,6 +143,8 @@ def _articles_block(sources: list[dict]) -> str:
 
 def answer(question: str, history: list[dict] | None = None, filters: Filters | None = None,
            store: VectorStore | None = None, conn=None, k: int = TOP_K, embed_fn=None) -> Result:
+    if not llm.chatbot_switch_on():   # 페이지를 거치지 않고 호출돼도 스위치가 꺼져 있으면 OpenAI를 부르지 않는다
+        raise llm.ChatbotDisabled("챗봇이 비활성화되어 있습니다 (CHATBOT_ENABLED)")
     history = [m for m in (history or []) if m.get("role") in ("user", "assistant")][-HISTORY_TURNS:]
     filters = filters or Filters()
     own_conn = conn is None

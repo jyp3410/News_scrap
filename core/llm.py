@@ -28,6 +28,34 @@ class LLMError(RuntimeError):
     """OpenAI 호출/응답 처리 실패."""
 
 
+class ChatbotDisabled(RuntimeError):
+    """챗봇이 꺼져 있다 (CHATBOT_ENABLED 스위치). 방문자에게는 친절한 안내만 보여 주고 OpenAI는 호출하지 않는다."""
+
+
+_TRUE_VALUES = {"1", "true", "yes", "y", "on"}
+
+
+def chatbot_switch_on() -> bool:
+    """CHATBOT_ENABLED 스위치. 설정하지 않으면 켜짐.
+
+    값을 설정했는데 true 계열이 아니면 꺼짐으로 본다 ('false', '0', 'off', 오타 'flase' 등).
+    꺼서 비용을 막으려는 설정이 오타 때문에 켜진 채로 남는 일을 피하기 위해 실패 시 닫는 쪽으로 판정한다.
+    """
+    raw = os.getenv("CHATBOT_ENABLED")
+    if raw is None or not raw.strip():
+        return True
+    return raw.strip().lower() in _TRUE_VALUES
+
+
+def chatbot_status() -> tuple[bool, str | None]:
+    """(사용 가능 여부, 불가 사유). 사유: 'switch_off'(스위치) 또는 'no_key'(OpenAI 키 없음)."""
+    if not chatbot_switch_on():
+        return False, "switch_off"
+    if not os.getenv("OPENAI_API_KEY", "").strip():
+        return False, "no_key"
+    return True, None
+
+
 def chat_model() -> str:
     return os.getenv("CHAT_MODEL") or "gpt-6-astra"
 

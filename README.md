@@ -27,7 +27,7 @@ python -m pytest tests                      # 테스트 (단일: pytest tests/te
 ## 설정
 - `config/sources.yaml`: 수집 소스 (RSS URL, 국가/언어, 시간대 오프셋, 키워드 필터 여부)
 - `config/categories.yaml`: 중분류와 키워드
-- 환경변수(전체 목록은 `.env.example`): `OPENAI_API_KEY`, `CHAT_MODEL`(기본 gpt-6-astra), `EMBEDDING_MODEL`(기본 text-embedding-3-small), `RAG_MIN_SCORE`(기본 0.27), `PIPELINE_MAX_ENRICH`
+- 환경변수(전체 목록은 `.env.example`): `OPENAI_API_KEY`, `CHAT_MODEL`(기본 gpt-6-astra), `EMBEDDING_MODEL`(기본 text-embedding-3-small), `RAG_MIN_SCORE`(기본 0.27), `CHATBOT_ENABLED`(기본 켜짐), `PIPELINE_MAX_ENRICH`
 
 ## 불필요한 기사 거르기
 - **보안 무관 기사 검증**: 분류·요약 호출 안에서 LLM이 "주제가 정보보안인가"를 함께 판정한다 (추가 호출 없음).
@@ -41,6 +41,17 @@ python -m pytest tests                      # 테스트 (단일: pytest tests/te
 ## 자동 수집 (GitHub Actions)
 `.github/workflows/collect.yml`이 **하루 4번(한국시간 00·06·12·18시)** 파이프라인을 실행하고 `data/` 변경분을 커밋한다.
 저장소 Settings → Secrets에 `OPENAI_API_KEY`를 등록해야 한다.
+
+## 챗봇 켜기/끄기
+공개 앱에서는 챗봇 질문마다 OpenAI 요금이 발생하므로 스위치를 둔다.
+- **끄기**: Streamlit Secrets(또는 환경변수)에 `CHATBOT_ENABLED = "false"` 를 넣는다. 키를 지우지 않아도 되고, 다시 켜려면 줄을 지우거나 `"true"`로 바꾼다.
+  `false`/`0`/`no`/`off` 같은 값은 물론 오타(`flase` 등)도 꺼짐으로 처리한다 (끄려던 설정이 오타로 켜진 채 남지 않도록).
+- **키가 없을 때**도 자동으로 꺼진다.
+- 꺼지면 챗봇 페이지에는 "챗봇은 현재 이용할 수 없습니다" 안내만 보이고 필터·예시 질문·입력창은 나타나지 않으며 OpenAI는 호출하지 않는다.
+  사유(스위치/키 없음)는 서버 로그에만 남아 방문자에게는 설정 정보가 노출되지 않는다.
+- 뉴스 목록과 대시보드는 OpenAI 키를 쓰지 않으므로 챗봇을 꺼도 그대로 동작한다.
+- 키는 용도별로 나누는 것을 권한다: 자동 수집용(GitHub Actions)과 챗봇용(Streamlit)을 따로 만들고, 챗봇용에는 OpenAI 프로젝트의 월 사용 한도를 낮게 건다.
+  **GitHub Actions의 `OPENAI_API_KEY`는 지우면 자동 수집이 멈추므로 챗봇을 끌 때는 Streamlit 쪽만 건드린다.**
 
 ## 수집 기준 시간
 스케줄은 6시간마다지만, 지연·실패로 기사를 놓치지 않도록 소스마다 **실행 시각 − 6시간 30분** 이후 발행된 기사를 대상으로 한다
