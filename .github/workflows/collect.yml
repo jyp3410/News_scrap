@@ -1,0 +1,69 @@
+name: collect-news
+
+on:
+  schedule:
+    # 하루 4번, 한국시간 00:00 · 06:00 · 12:00 · 18:00 (GitHub cron은 UTC라 15·21·03·09시).
+    # 스케줄 실행은 몇 분~수십 분 늦을 수 있어, 수집 기준 시간에 30분 여유와 소스별 마지막 성공 시각을 둔다.
+    - cron: "0 3,9,15,21 * * *"
+  workflow_dispatch:
+
+# 동시 실행 방지 (data/ 충돌 예방)
+concurrency:
+  group: collect-news
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+
+      - name: Run pipeline
+        id: pipeline
+        # 실패해도 다음 단계가 실행돼야 한다: 러너는 일회성이라 여기서 중단하면 그 회차에 저장된
+        # 수집·요약 결과가 전부 사라진다. 실패는 마지막 단계에서 잡의 실패로 표시한다.
+        continue-on-error: true
+        timeout-minutes: 25
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          CHAT_MODEL: ${{ vars.CHAT_MODEL }}
+          EMBEDDING_MODEL: ${{ vars.EMBEDDING_MODEL }}
+        run: python scripts/run_pipeline.py
+
+      - name: Commit data
+        if: always()
+        run: |
+          git config user.name "news-bot"
+          git config user.email "news-bot@users.noreply.github.com"
+          git add data/news.db data/faiss.index data/id_map.json
+          if git diff --cached --quiet; then
+            echo "변경 없음"
+            exit 0
+          fi
+          git commit -m "chore: update news data"
+          # 데이터는 CI가 갱신하는 것이 원칙이다. 누가 먼저 push해서 충돌하면 재시도하되,
+          # data/ 의 충돌은 이번 실행(CI)의 결과를 택한다. (리베이스에서 'theirs'는 재적용 중인 내 커밋)
+          for i in 1 2 3; do
+            if git push; then
+              exit 0
+            fi
+            echo "push 실패 ($i/3): 원격 변경을 가져와 다시 시도합니다"
+            git pull --rebase -X theirs || { git rebase --abort || true; exit 1; }
+          done
+          echo "::error::3회 시도 후에도 push하지 못했습니다"
+          exit 1
+
+      - name: Fail the job if the pipeline failed
+        if: steps.pipeline.outcome == 'failure'
+        run: |
+          echo "::error::파이프라인이 실패했습니다. 그때까지의 결과는 위 단계에서 커밋됐습니다. 로그를 확인하세요."
+          exit 1

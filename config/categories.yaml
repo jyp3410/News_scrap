@@ -1,0 +1,24 @@
+major: 정보보안
+minor:
+  침해 사고:
+    ko: [침해, 침해사고, 랜섬웨어, 장애, 공격 받, 서비스 중단, 사이버 공격, 디도스, DDoS]
+    en: [breach, ransomware, outage, cyberattack, cyber attack, incident, ddos, disrupted]
+  해킹:
+    ko: [해킹, 해커, 악성코드, 멀웨어, 피싱, 백도어, 탈취, APT]
+    en: [hack, hacker, malware, phishing, backdoor, botnet, apt, trojan, spyware, exploit]
+  정보유출:
+    ko: [유출, 개인정보, 정보 유출, 노출, 해킹당]
+    en: [leak, data breach, exposed, stolen data, data theft, personal data]
+  컨퍼런스:
+    ko: [컨퍼런스, 콘퍼런스, 세미나, 웨비나, 포럼, 간담회, 해킹방어대회, 코드게이트, 시큐인사이드, 보안 행사, 전시회]
+    en: [conference, secon, isec, rsa conference, black hat, def con, rsac, summit, webinar]
+  취약점:
+    ko: [취약점, 제로데이, 패치, 보안 업데이트, CVE]
+    en: [vulnerability, zero-day, 0-day, patch, cve-, security update, flaw]
+  기타:
+    ko: []
+    en: []
+# 정보보안 관련 기사인지 판단하는 공통 키워드 (keyword_filter: true 소스용)
+security_keywords:
+  ko: [보안, 해킹, 해커, 랜섬웨어, 악성, 취약, 유출, 침해, 사이버, 피싱, 개인정보, 제로데이, 암호, 백신, 방화벽, 정보보호, 인증]
+  en: [security, hack, ransomware, malware, vulnerab, breach, cyber, phishing, exploit, zero-day, flaw, leak, attack, threat, backdoor, botnet, spyware, trojan, infostealer, cve-]

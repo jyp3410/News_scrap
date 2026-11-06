@@ -1,0 +1,110 @@
+# 수집 소스 목록 (PRD F-2). 2026-11-06 기준 실제 접속/파싱 확인한 RSS만 포함.
+# utc_offset: 발행일에 시간대 표기가 없을 때 가정할 UTC 오프셋(시간)
+# keyword_filter: true면 categories.yaml 키워드가 제목/요약에 있는 기사만 저장 (일반 IT 매체용 1차 필터)
+# enabled: false 로 두면 해당 소스는 수집하지 않는다 (생략하면 true)
+#
+# 보안과 무관한 기사는 소스와 상관없이 분류 단계에서 LLM이 한 번 더 걸러낸다
+# (확신도가 높을 때만 '숨김' 처리하며 삭제하지는 않는다).
+
+# 수집하지 않을 뉴스사 (아래 sources의 name과 같은 이름. 대소문자·앞뒤 공백은 무시)
+# Dark Reading: robots.txt가 수집을 허용하지 않아 제외 (저장돼 있던 기사 50건도 삭제함)
+exclude_sources: ["Dark Reading"]
+
+# 수집 기준 시간. 하루 4번(한국시간 00·06·12·18시) 돌지만, 실행 지연이나 일시 실패로 기사를 놓치지 않도록
+# 소스마다 "실행 시각 − lookback_hours" 이후에 발행된 기사를 대상으로 한다 (6시간 주기 + 30분 여유).
+# 직전 성공 시각 − overlap_minutes 가 더 이르면 그쪽을 쓰므로, 실행이 밀리거나 한 번 실패해도 빠지는 구간이 없다.
+# 처음 수집하는 소스는 제한 없이 전부 가져온다. 중복은 URL·제목으로 걸러진다. 제한을 끄려면 --full.
+collection:
+  lookback_hours: 6.5
+  overlap_minutes: 30
+
+# 행사·세미나(중분류 '컨퍼런스') 수집 보강.
+# 뉴스 RSS는 최신 며칠치만 주기 때문에 SECON·ISEC·RSA 같은 행사는 그 주에 기사가 없으면 잡히지 않는다.
+# 아래 행사 이름으로 검색한 뉴스(Bing News RSS)를 함께 모은다. 뉴스사는 검색 결과의 실제 매체명으로 저장된다.
+# 끄려면 enabled: false, 행사를 추가/삭제하려면 queries를 고친다. (검색 한 번이 요청 한 번 + 기사 본문 확인이 따른다)
+event_search:
+  enabled: true
+  max_age_days: 365        # 이보다 오래됐거나 발행일을 알 수 없는 검색 결과는 버린다 (행사는 연 1회라 1년은 봐야 지난 행사가 잡힌다)
+  per_query_limit: 15      # 검색어 하나당 최대 저장 건수
+  queries:
+    - "SECON 보안"
+    - "ISEC 정보보호"
+    - "RSAC 보안"            # 보도에서는 RSA Conference를 대부분 RSAC로 쓴다 ("RSA Conference"로 검색하면 무관한 결과만 나온다)
+    - "Black Hat"
+    - "DEF CON"
+    - "코드게이트"
+    - "사이버보안 콘퍼런스"
+
+sources:
+  - name: 데일리시큐
+    url: https://www.dailysecu.com/rss/allArticle.xml
+    country: KR
+    language: ko
+    method: rss
+    utc_offset: 9
+    keyword_filter: false
+  - name: 보안뉴스
+    url: https://www.boannews.com/rss/allArticle.xml
+    country: KR
+    language: ko
+    method: rss
+    utc_offset: 9
+    keyword_filter: false
+  - name: 전자신문 보안
+    url: https://rss.etnews.com/04045.xml
+    country: KR
+    language: ko
+    method: rss
+    utc_offset: 9
+    keyword_filter: false
+  - name: 데이터넷
+    url: https://www.datanet.co.kr/rss/allArticle.xml
+    country: KR
+    language: ko
+    method: rss
+    utc_offset: 9
+    keyword_filter: true
+  - name: The Hacker News
+    url: https://feeds.feedburner.com/TheHackersNews
+    country: GLOBAL
+    language: en
+    method: rss
+    utc_offset: 0
+    keyword_filter: false
+  - name: BleepingComputer
+    url: https://www.bleepingcomputer.com/feed/
+    country: GLOBAL
+    language: en
+    method: rss
+    utc_offset: 0
+    keyword_filter: false
+  - name: Krebs on Security
+    url: https://krebsonsecurity.com/feed/
+    country: GLOBAL
+    language: en
+    method: rss
+    utc_offset: 0
+    keyword_filter: false
+  - name: SecurityWeek
+    url: https://www.securityweek.com/feed/
+    country: GLOBAL
+    language: en
+    method: rss
+    utc_offset: 0
+    keyword_filter: false
+  - name: The Record
+    url: https://therecord.media/feed
+    country: GLOBAL
+    language: en
+    method: rss
+    utc_offset: 0
+    keyword_filter: false
+  - name: Dark Reading
+    url: https://www.darkreading.com/rss.xml
+    country: GLOBAL
+    language: en
+    method: rss
+    utc_offset: 0
+    keyword_filter: false
+
+# 참고: KISA 보호나라(boho.or.kr)는 RSS 주소를 찾지 못해 제외 (HTML 수집은 미지원 — method는 현재 rss만 가능).

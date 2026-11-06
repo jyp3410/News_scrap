@@ -1,0 +1,10 @@
+# base(라이트/다크)는 지정하지 않아 사용자 시스템/Streamlit 설정을 따른다.
+[theme]
+primaryColor = "#2563eb"
+font = "sans serif"
+
+[client]
+toolbarMode = "minimal"
+
+[browser]
+gatherUsageStats = false

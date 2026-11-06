@@ -1,0 +1,20 @@
+﻿# 비밀값
+.env
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# 로그
+*.log
+logs/
+
+# IDE / OS
+.vscode/
+.idea/
+Thumbs.db
+
+# 저장 중 크래시로 남을 수 있는 임시 파일
+*.tmp

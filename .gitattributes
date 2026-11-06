@@ -1,0 +1,5 @@
+# 데이터 파일은 바이너리로 취급한다: 텍스트 diff·병합 충돌 표시자를 만들지 않는다.
+# (충돌이 나면 자동 병합 대신 한쪽을 선택해야 한다. CI 워크플로가 이를 처리한다.)
+data/news.db binary
+data/faiss.index binary
+data/id_map.json -diff
